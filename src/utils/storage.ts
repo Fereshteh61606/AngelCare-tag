@@ -7,16 +7,23 @@ if (!supabase) {
 
 export const savePersonInfo = async (person: PersonInfo): Promise<void> => {
   try {
+    console.log('Attempting to save person to Supabase:', { id: person.id, name: person.name, lastName: person.lastName });
     const dbPerson = toDatabase(person);
-    const { error } = await supabase!
+    const { data, error } = await supabase!
       .from('persons')
-      .insert([dbPerson]);
+      .insert([dbPerson])
+      .select(); // Return the inserted data for confirmation
 
     if (error) {
-      console.error('Supabase insert error:', error.message, error.details, error.hint);
+      console.error('Supabase insert error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
       throw error;
     }
-    console.log('Person saved to Supabase:', person.id);
+    console.log('Person saved successfully to Supabase:', data);
   } catch (error) {
     console.error('Error saving person info to Supabase:', error);
     throw error;
@@ -25,16 +32,22 @@ export const savePersonInfo = async (person: PersonInfo): Promise<void> => {
 
 export const getPersonsData = async (): Promise<PersonInfo[]> => {
   try {
+    console.log('Fetching all persons from Supabase');
     const { data, error } = await supabase!
       .from('persons')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Supabase fetch error:', error.message, error.details, error.hint);
+      console.error('Supabase fetch error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
       throw error;
     }
-
+    console.log('Persons fetched successfully:', data ? data.length : 0, 'records');
     return data ? data.map(fromDatabase) : [];
   } catch (error) {
     console.error('Error fetching persons data from Supabase:', error);
@@ -44,6 +57,7 @@ export const getPersonsData = async (): Promise<PersonInfo[]> => {
 
 export const getPersonById = async (id: string): Promise<PersonInfo | null> => {
   try {
+    console.log('Fetching person by ID from Supabase:', id);
     const { data, error } = await supabase!
       .from('persons')
       .select('*')
@@ -51,10 +65,15 @@ export const getPersonById = async (id: string): Promise<PersonInfo | null> => {
       .single();
 
     if (error) {
-      console.error('Supabase fetch by ID error:', error.message, error.details, error.hint);
+      console.error('Supabase fetch by ID error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
       throw error;
     }
-
+    console.log('Person fetched successfully:', data ? data.id : 'Not found');
     return data ? fromDatabase(data) : null;
   } catch (error) {
     console.error('Error fetching person by ID from Supabase:', error);
@@ -64,15 +83,22 @@ export const getPersonById = async (id: string): Promise<PersonInfo | null> => {
 
 export const deletePersonById = async (id: string): Promise<void> => {
   try {
+    console.log('Deleting person by ID from Supabase:', id);
     const { error } = await supabase!
       .from('persons')
       .delete()
       .eq('id', id);
 
     if (error) {
-      console.error('Supabase delete error:', error.message, error.details, error.hint);
+      console.error('Supabase delete error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
       throw error;
     }
+    console.log('Person deleted successfully:', id);
   } catch (error) {
     console.error('Error deleting person from Supabase:', error);
     throw error;
