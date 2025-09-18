@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trash2, Phone,  User, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, Phone, User, AlertCircle } from 'lucide-react';
 import { PersonInfo } from '../types';
 import { getPersonById, deletePersonById } from '../utils/storage';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
@@ -75,7 +75,9 @@ export const ViewPersonPage: React.FC = () => {
     );
   }
 
-  const qrData = `${window.location.origin}/view/${person.id}`;
+  // Use environment variable for base URL, fallback to window.location.origin
+  const baseUrl = import.meta.env.VITE_APP_BASE_URL || window.location.origin;
+  const qrData = `${baseUrl}/view/${person.id}`;
   console.log('QR Data generated:', qrData);
 
   return (
