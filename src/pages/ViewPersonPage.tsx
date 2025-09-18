@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, Phone, MapPin, User, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, Phone,  User, AlertCircle } from 'lucide-react';
 import { PersonInfo } from '../types';
 import { getPersonById, deletePersonById } from '../utils/storage';
 import { QRCodeDisplay } from '../components/QRCodeDisplay';
@@ -17,9 +17,15 @@ export const ViewPersonPage: React.FC = () => {
     const loadPerson = async () => {
       if (id) {
         console.log('Loading person with ID:', id);
-        const foundPerson = await getPersonById(id);
-        console.log('Found person:', foundPerson);
-        setPerson(foundPerson);
+        try {
+          const foundPerson = await getPersonById(id);
+          console.log('Person data received:', foundPerson ? { id: foundPerson.id, name: foundPerson.name, lastName: foundPerson.lastName } : 'Not found');
+          setPerson(foundPerson);
+        } catch (error) {
+          console.error('Error loading person:', error);
+        }
+      } else {
+        console.error('No ID provided in URL');
       }
       setLoading(false);
     };
@@ -70,7 +76,7 @@ export const ViewPersonPage: React.FC = () => {
   }
 
   const qrData = `${window.location.origin}/view/${person.id}`;
-  console.log('QR Data:', qrData);
+  console.log('QR Data generated:', qrData);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-25 to-emerald-50">
