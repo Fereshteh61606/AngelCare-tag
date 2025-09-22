@@ -9,13 +9,14 @@ export const savePersonInfo = async (person: PersonInfo): Promise<void> => {
   try {
     console.log('Attempting to save person to Supabase:', { id: person.id, name: person.name, lastName: person.lastName });
     const dbPerson = toDatabase(person);
-    const { data, error } = await supabase!
+    
+    // Use upsert instead of insert to handle updates if needed
+    const { error } = await supabase!
       .from('persons')
-      .insert([dbPerson])
-      .select(); // Return the inserted data for confirmation
+      .upsert(dbPerson);
 
     if (error) {
-      console.error('Supabase insert error:', {
+      console.error('Supabase upsert error:', {
         message: error.message,
         details: error.details,
         hint: error.hint,
@@ -23,7 +24,7 @@ export const savePersonInfo = async (person: PersonInfo): Promise<void> => {
       });
       throw error;
     }
-    console.log('Person saved successfully to Supabase:', data);
+    console.log('Person saved successfully to Supabase');
   } catch (error) {
     console.error('Error saving person info to Supabase:', error);
     throw error;
@@ -71,13 +72,18 @@ export const getPersonById = async (id: string): Promise<PersonInfo | null> => {
         hint: error.hint,
         code: error.code,
       });
+      
+      // If not found, return null instead of throwing
+      if (error.code === 'PGRST116') { // Code for "not found"
+        return null;
+      }
       throw error;
     }
     console.log('Person fetched successfully:', data ? data.id : 'Not found');
     return data ? fromDatabase(data) : null;
   } catch (error) {
     console.error('Error fetching person by ID from Supabase:', error);
-    throw error;
+    return null;
   }
 };
 
